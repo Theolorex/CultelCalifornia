@@ -97,3 +97,22 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Extra IDE/editor configs
+.idea/
+.vscode/
+
+# Unity cache
+/[Aa]ssets/AssetImportCache/
+
+# Extra build artifacts
+/[Pp]ublish/
+/[Bb]in/
+/[Dd]ebug*/
+/[Rr]elease*/
+
+# Unity Collaborate
+/[Cc]ollab/
+
+# JetBrains Rider project-wide settings
+*.DotSettings
