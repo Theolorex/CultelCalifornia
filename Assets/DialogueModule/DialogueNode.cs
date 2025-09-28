@@ -8,6 +8,7 @@ using UnityEngine; //THIS IS FOR DEFINING WHAT THE NODES CAN DO
         Floating //voices, dont know if normal dialogue'll include this
     }
 
+
     [System.Serializable]
     public class DialogueLine //class that defines what the lines actually are
     {
@@ -20,6 +21,7 @@ using UnityEngine; //THIS IS FOR DEFINING WHAT THE NODES CAN DO
         public float outlineWidth = 0.2f;
         public int fontSize = 42;
         public string characterID; //which character is speaking
+        public bool autoProgress = false; //WHICH DIALOGUE WILL AUTOPROGRESS OR NOT 
     }
 
     [System.Serializable]
