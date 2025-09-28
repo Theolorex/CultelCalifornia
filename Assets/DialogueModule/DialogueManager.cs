@@ -12,6 +12,11 @@ public class DialogueManager : MonoBehaviour
     public DialogueNode[] dialogueNodes; //Each "set" of dialogue
     private int currentNode = 0; //which "scene" you are currently in, represented by the int number
     
+    [Header("Voice Spawn Points")]
+    public RectTransform spawnBarbarian;
+    public RectTransform spawnWizard;
+    public RectTransform spawnBard;
+    
     [Header("UI References")]
     public TMP_Text dialogueBox;               // for normal dialogue
     public Transform floatingTextParent;       // parent for floating lines
@@ -60,6 +65,24 @@ public class DialogueManager : MonoBehaviour
                 case DialogueStyle.Floating: //voices dialogue
                 {
                     GameObject ft = Instantiate(floatingTextPrefab, floatingTextParent);
+                    RectTransform rt = ft.GetComponent<RectTransform>();
+
+                    switch (line.characterID)
+                    {
+                        case "wizard":
+                            ft.transform.position = spawnWizard.position;
+                            break;
+                        case "bard":
+                            ft.transform.position = spawnBard.position;
+                            break;
+                        case "barbarian":
+                            ft.transform.position = spawnBarbarian.position;
+                            break;
+                        default:
+                            rt.anchoredPosition = new Vector2(Random.Range(-200f, 200f), Random.Range(-100f, 100f));
+                            break;
+                    }
+
                     TMP_Text ftText = ft.GetComponent<TMP_Text>();
                     if (ftText == null)
                     {
