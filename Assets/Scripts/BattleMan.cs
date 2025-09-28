@@ -15,6 +15,7 @@ public class BattleMan : MonoBehaviour
     public Camera battleCam;
 
     public SceneMoveNew sm;
+    public DialogueManager dm;
 
     void BattleStart(Combatant enemy, bool playerStarts)
     {
