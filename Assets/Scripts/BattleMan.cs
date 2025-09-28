@@ -49,7 +49,7 @@ public class BattleMan : MonoBehaviour
         }
         else
         {
-                Debug.Log("Got");
+            Debug.Log("Got");
             battleCam.enabled = false;
             winCam.enabled = true;
         }
