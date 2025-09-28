@@ -22,6 +22,7 @@ public class DialogueManager : MonoBehaviour
     public Transform floatingTextParent;       // parent for floating lines
     public GameObject floatingTextPrefab;      // prefab for floating text
     
+    
     void Awake()
     {
         Instance = this;
