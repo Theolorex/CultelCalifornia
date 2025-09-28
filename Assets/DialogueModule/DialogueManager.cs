@@ -47,6 +47,7 @@ public class DialogueManager : MonoBehaviour
     }
     public void ShowDialogueAtScene(int sceneIndex) //process that prints lines on the screen
     {
+        dialogueBox.text = "...";
         if (dialogueNodes == null || sceneIndex < 0 || sceneIndex >= dialogueNodes.Length)
         {
             Debug.LogWarning("Dialogue Node is out of range.");
@@ -90,18 +91,32 @@ public class DialogueManager : MonoBehaviour
                         Debug.LogError("floatingTextPrefab must contain a TMP_Text / TextMeshProUGUI component.");
                         continue;
                     }
+                    Debug.Log($"Processing line: '{line.text}', type: {line.type}, characterID: '{line.characterID}'");
+                    Debug.Log($"Canvas info: {ftText.canvas}, SortingOrder: {ftText.canvas?.sortingOrder}");
+                    Debug.Log($"Font Asset: {ftText.font?.name}");
+                    Debug.Log($"Material RenderQueue: {ftText.fontMaterial?.renderQueue}");
+                    ftText.ForceMeshUpdate();
+                    Debug.Log($"Vertex Count after ForceMeshUpdate: {ftText.textInfo?.meshInfo?[0].vertexCount}");
+                    Debug.Log($"Spawned floating text: {line.text}");
                     ftText.text = line.text;
+                    Color safeColor = line.textColor;
+                    if (safeColor.a <= 0f) safeColor.a = 1f;
+
+                    ftText.color = safeColor;
+                    dialogueBox.color = safeColor;
                     ftText.color = line.textColor;
                     ftText.fontSize = line.fontSize;
+                    
+                    DebugHelpers.DebugRect(ftText, "FloatingText");
 
                     // per-instance material for outline if requested
-                    if (line.outlineWidth > 0f)
+                    /*if (line.outlineWidth > 0f)
                     {
                         Material mat = new Material(ftText.fontSharedMaterial);
                         ftText.fontMaterial = mat;
                         mat.SetFloat(ShaderUtilities.ID_OutlineWidth, line.outlineWidth);
                         mat.SetColor(ShaderUtilities.ID_OutlineColor, line.outlineColor);
-                    }
+                    }*/
                     
                     // ensure it has a CanvasGroup for dragging
                     if (ft.GetComponent<CanvasGroup>() == null)
@@ -111,6 +126,9 @@ public class DialogueManager : MonoBehaviour
                     DraggableText drag = ft.GetComponent<DraggableText>();
                     if (drag == null) drag = ft.AddComponent<DraggableText>();
                     drag.characterID = line.characterID;
+                    
+                    
+                    DebugHelpers.DebugRect(ftText, "FloatingText");
                     break;
                 }
                 case DialogueStyle.Normal: //normal dialogue
@@ -118,6 +136,8 @@ public class DialogueManager : MonoBehaviour
                     dialogueBox.text = line.text;
                     dialogueBox.color = line.textColor;
                     dialogueBox.fontSize = line.fontSize;
+                    
+                    DebugHelpers.DebugRect(dialogueBox, "NormalText");
                     if (line.outlineWidth > 0f)
                     {
                         // copy shared material into an instance so we don't change every TMP using this font
@@ -126,6 +146,8 @@ public class DialogueManager : MonoBehaviour
                         mat.SetFloat(ShaderUtilities.ID_OutlineWidth, line.outlineWidth);
                         mat.SetColor(ShaderUtilities.ID_OutlineColor, line.outlineColor);
                     }
+                    
+                    DebugHelpers.DebugRect(dialogueBox, "NormalText");
                     break;
                 }
             }
@@ -147,5 +169,23 @@ public class DialogueManager : MonoBehaviour
         }
 
         Debug.Log($"No matching drag choice for {characterID} in {zoneID}");
+    }
+}
+public static class DebugHelpers
+{
+    public static void DebugRect(TMPro.TMP_Text t, string label = "")
+    {
+        if (t == null) { Debug.LogWarning($"[DebugRect] {label} TMP_Text is null"); return; }
+
+        Debug.Log($"[DebugRect] {label} " +
+                  $"text='{t.text}', " +
+                  $"color={t.color}, " +
+                  $"alpha={t.color.a}, " +
+                  $"pos={t.rectTransform.position}, " +
+                  $"anchoredPos={t.rectTransform.anchoredPosition}, " +
+                  $"size={t.rectTransform.rect.size}, " +
+                  $"scale={t.rectTransform.lossyScale}, " +
+                  $"active={t.gameObject.activeInHierarchy}, " +
+                  $"material={t.fontMaterial?.name}");
     }
 }

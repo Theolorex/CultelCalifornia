@@ -16,7 +16,7 @@ using UnityEngine; //THIS IS FOR DEFINING WHAT THE NODES CAN DO
         public DialogueStyle type = DialogueStyle.Normal; //default is normal, but for voices should be swapped
         
         //fun customize line color and text, differentiate who is talking or how
-        public Color textColor = Color.white; 
+        public Color textColor = new Color(1f, 1f, 1f, 1f); 
         public Color outlineColor = Color.black;
         public float outlineWidth = 0.2f;
         public int fontSize = 42;
