@@ -12,6 +12,13 @@ public class DialogueManager : MonoBehaviour
     public DialogueNode[] dialogueNodes; //Each "set" of dialogue
     private int currentNode = 0; //which "scene" you are currently in, represented by the int number
     
+    [Header("Drop Zone")]
+    public GameObject dropZonePrefab;
+    
+    [Header("Typing Settings")]
+    public float typingSpeed = 0.03f; // seconds per character
+    public float autoProgressDelay = 1f; // pause before auto-progress
+    
     [Header("Voice Spawn Points")]
     public RectTransform spawnBarbarian;
     public RectTransform spawnWizard;
@@ -32,7 +39,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (dialogueNodes != null && dialogueNodes.Length > 0)
         {
-            ShowDialogueAtScene(currentNode); //initializes us at the beginning when the program starts, 
+            ShowDialogueAtScene(currentNode); //initializes us at the beginning when the program starts 
         }
     }
 
@@ -47,18 +54,18 @@ public class DialogueManager : MonoBehaviour
     }
     public void ShowDialogueAtScene(int sceneIndex) //process that prints lines on the screen
     {
+        ///BOILERPLATE 
         dialogueBox.text = "...";
         if (dialogueNodes == null || sceneIndex < 0 || sceneIndex >= dialogueNodes.Length)
         {
             Debug.LogWarning("Dialogue Node is out of range.");
             return;
         }
-        
         currentNode = sceneIndex; 
         DialogueNode dialogueNode = dialogueNodes[sceneIndex]; //variable made equal to the set of dialogue at given scene
-
         foreach (Transform child in floatingTextParent) //destroy old text
             Destroy(child.gameObject);
+        ///REAL CODE
         
         foreach (var line in dialogueNode.dialogue) //for every line in the given scene, generate them like this
         {
@@ -66,6 +73,7 @@ public class DialogueManager : MonoBehaviour
             {
                 case DialogueStyle.Floating: //voices dialogue
                 {
+
                     GameObject ft = Instantiate(floatingTextPrefab, floatingTextParent);
                     RectTransform rt = ft.GetComponent<RectTransform>();
 
@@ -91,13 +99,8 @@ public class DialogueManager : MonoBehaviour
                         Debug.LogError("floatingTextPrefab must contain a TMP_Text / TextMeshProUGUI component.");
                         continue;
                     }
-                    Debug.Log($"Processing line: '{line.text}', type: {line.type}, characterID: '{line.characterID}'");
-                    Debug.Log($"Canvas info: {ftText.canvas}, SortingOrder: {ftText.canvas?.sortingOrder}");
-                    Debug.Log($"Font Asset: {ftText.font?.name}");
-                    Debug.Log($"Material RenderQueue: {ftText.fontMaterial?.renderQueue}");
+
                     ftText.ForceMeshUpdate();
-                    Debug.Log($"Vertex Count after ForceMeshUpdate: {ftText.textInfo?.meshInfo?[0].vertexCount}");
-                    Debug.Log($"Spawned floating text: {line.text}");
                     ftText.text = line.text;
                     Color safeColor = line.textColor;
                     if (safeColor.a <= 0f) safeColor.a = 1f;
@@ -106,18 +109,7 @@ public class DialogueManager : MonoBehaviour
                     dialogueBox.color = safeColor;
                     ftText.color = line.textColor;
                     ftText.fontSize = line.fontSize;
-                    
-                    DebugHelpers.DebugRect(ftText, "FloatingText");
 
-                    // per-instance material for outline if requested
-                    /*if (line.outlineWidth > 0f)
-                    {
-                        Material mat = new Material(ftText.fontSharedMaterial);
-                        ftText.fontMaterial = mat;
-                        mat.SetFloat(ShaderUtilities.ID_OutlineWidth, line.outlineWidth);
-                        mat.SetColor(ShaderUtilities.ID_OutlineColor, line.outlineColor);
-                    }*/
-                    
                     // ensure it has a CanvasGroup for dragging
                     if (ft.GetComponent<CanvasGroup>() == null)
                         ft.AddComponent<CanvasGroup>();
@@ -126,9 +118,14 @@ public class DialogueManager : MonoBehaviour
                     DraggableText drag = ft.GetComponent<DraggableText>();
                     if (drag == null) drag = ft.AddComponent<DraggableText>();
                     drag.characterID = line.characterID;
+
                     
-                    
-                    DebugHelpers.DebugRect(ftText, "FloatingText");
+                    if (!line.autoProgress && dropZonePrefab != null) //if line NEEDS A CHOICE CREATE A BOX
+                    {
+                        GameObject dz = Instantiate(dropZonePrefab, floatingTextParent);
+                        RectTransform dzRect = dz.GetComponent<RectTransform>();
+                        dzRect.anchoredPosition = line.hitboxPosition;
+                    }
                     break;
                 }
                 case DialogueStyle.Normal: //normal dialogue
