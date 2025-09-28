@@ -16,12 +16,13 @@ using UnityEngine; //THIS IS FOR DEFINING WHAT THE NODES CAN DO
         public DialogueStyle type = DialogueStyle.Normal; //default is normal, but for voices should be swapped
         
         //fun customize line color and text, differentiate who is talking or how
-        public Color textColor = Color.white; 
+        public Color textColor = new Color(1f, 1f, 1f, 1f); 
         public Color outlineColor = Color.black;
         public float outlineWidth = 0.2f;
         public int fontSize = 42;
         public string characterID; //which character is speaking
-        public bool autoProgress = false; //WHICH DIALOGUE WILL AUTOPROGRESS OR NOT 
+        public Vector2 hitboxPosition = Vector2.zero; //where to put the dropzone
+        public bool autoProgress = false; //ALSO USEFUL IF IT HAS A CHOICE OR NOT (FOR SPAWNING BOUND BOX)
     }
 
     [System.Serializable]

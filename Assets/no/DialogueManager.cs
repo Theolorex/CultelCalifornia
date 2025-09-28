@@ -6,11 +6,14 @@ using UnityEngine.UI;
 
 public class DialogueManager : MonoBehaviour
 {
-    public static DialogueManager Instance; //shit code but we make it an instance so everyhting gets a quick reference to it. TERRIBLE TERRIBLE TERRIBLE 
+    public static DialogueManager Instance; 
     
     [Header("Dialogue Data")]
-    public DialogueNode[] dialogueNodes; //Each "set" of dialogue
-    private int currentNode = 0; //which "scene" you are currently in, represented by the int number
+    public DialogueNode[] dialogueNodes; 
+    private int currentNode = 0; 
+    
+    [Header("Drop Zone")]
+    public GameObject dropZonePrefab;
     
     [Header("Voice Spawn Points")]
     public RectTransform spawnBarbarian;
@@ -18,10 +21,13 @@ public class DialogueManager : MonoBehaviour
     public RectTransform spawnBard;
     
     [Header("UI References")]
-    public TMP_Text dialogueBox;               // for normal dialogue
-    public Transform floatingTextParent;       // parent for floating lines
-    public GameObject floatingTextPrefab;      // prefab for floating text
+    public TMP_Text dialogueBox;               
+    public Transform floatingTextParent;       
+    public GameObject floatingTextPrefab;      
     
+    [Header("Typing Settings")]
+    public float typingSpeed = 0.03f; // seconds per character
+    public float autoProgressDelay = 1f; // pause before auto-progress
     
     void Awake()
     {
@@ -32,56 +38,55 @@ public class DialogueManager : MonoBehaviour
     {
         if (dialogueNodes != null && dialogueNodes.Length > 0)
         {
-            ShowDialogueAtScene(currentNode); //initializes us at the beginning when the program starts, 
+            ShowDialogueAtScene(currentNode); 
         }
     }
 
-    
-    public void ProgressDialogue() //call this to progress manually
+    public void ProgressDialogue() 
     {
         DialogueNode node = dialogueNodes[currentNode];
-        if(node.nextNode != null && node.nextNode.Length > 0)
+        if (node.nextNode != null && node.nextNode.Length > 0)
         {
-            ShowDialogueAtScene(node.nextNode[0]); //show next in line
+            ShowDialogueAtScene(node.nextNode[0]); 
         }
     }
-    public void ShowDialogueAtScene(int sceneIndex) //process that prints lines on the screen
+
+    public void ShowDialogueAtScene(int sceneIndex) 
     {
+        dialogueBox.text = "...";
         if (dialogueNodes == null || sceneIndex < 0 || sceneIndex >= dialogueNodes.Length)
         {
             Debug.LogWarning("Dialogue Node is out of range.");
             return;
         }
-        
-        currentNode = sceneIndex; 
-        DialogueNode dialogueNode = dialogueNodes[sceneIndex]; //variable made equal to the set of dialogue at given scene
 
-        foreach (Transform child in floatingTextParent) //destroy old text
+        currentNode = sceneIndex; 
+        DialogueNode dialogueNode = dialogueNodes[sceneIndex]; 
+
+        foreach (Transform child in floatingTextParent) 
             Destroy(child.gameObject);
-        
-        foreach (var line in dialogueNode.dialogue) //for every line in the given scene, generate them like this
+
+        // Start coroutine to process lines one by one
+        StartCoroutine(ProcessDialogueLines(dialogueNode));
+    }
+
+    private IEnumerator ProcessDialogueLines(DialogueNode dialogueNode)
+    {
+        foreach (var line in dialogueNode.dialogue)
         {
-            switch (line.type) //different types have different effects
+            switch (line.type)
             {
-                case DialogueStyle.Floating: //voices dialogue
+                case DialogueStyle.Floating:
                 {
                     GameObject ft = Instantiate(floatingTextPrefab, floatingTextParent);
                     RectTransform rt = ft.GetComponent<RectTransform>();
 
                     switch (line.characterID)
                     {
-                        case "wizard":
-                            ft.transform.position = spawnWizard.position;
-                            break;
-                        case "bard":
-                            ft.transform.position = spawnBard.position;
-                            break;
-                        case "barbarian":
-                            ft.transform.position = spawnBarbarian.position;
-                            break;
-                        default:
-                            rt.anchoredPosition = new Vector2(Random.Range(-200f, 200f), Random.Range(-100f, 100f));
-                            break;
+                        case "wizard": ft.transform.position = spawnWizard.position; break;
+                        case "bard": ft.transform.position = spawnBard.position; break;
+                        case "barbarian": ft.transform.position = spawnBarbarian.position; break;
+                        default: rt.anchoredPosition = new Vector2(Random.Range(-200f, 200f), Random.Range(-100f, 100f)); break;
                     }
 
                     TMP_Text ftText = ft.GetComponent<TMP_Text>();
@@ -90,11 +95,10 @@ public class DialogueManager : MonoBehaviour
                         Debug.LogError("floatingTextPrefab must contain a TMP_Text / TextMeshProUGUI component.");
                         continue;
                     }
-                    ftText.text = line.text;
+
                     ftText.color = line.textColor;
                     ftText.fontSize = line.fontSize;
 
-                    // per-instance material for outline if requested
                     if (line.outlineWidth > 0f)
                     {
                         Material mat = new Material(ftText.fontSharedMaterial);
@@ -102,35 +106,82 @@ public class DialogueManager : MonoBehaviour
                         mat.SetFloat(ShaderUtilities.ID_OutlineWidth, line.outlineWidth);
                         mat.SetColor(ShaderUtilities.ID_OutlineColor, line.outlineColor);
                     }
-                    
-                    // ensure it has a CanvasGroup for dragging
+
                     if (ft.GetComponent<CanvasGroup>() == null)
                         ft.AddComponent<CanvasGroup>();
 
-                    // add/drill the draggable script and assign character ID
                     DraggableText drag = ft.GetComponent<DraggableText>();
                     if (drag == null) drag = ft.AddComponent<DraggableText>();
                     drag.characterID = line.characterID;
+
+                    // Typewriter effect for floating text
+                    yield return StartCoroutine(TypeFloatingText(ftText, line.text));
+
+                    // Spawn drop zone if not auto-progress
+                    if (!line.autoProgress && dropZonePrefab != null)
+                    {
+                        GameObject dz = Instantiate(dropZonePrefab, floatingTextParent);
+                        RectTransform dzRect = dz.GetComponent<RectTransform>();
+                        dzRect.anchoredPosition = line.hitboxPosition;
+                    }
+                    else if (line.autoProgress && dialogueNode.nextNode.Length > 0)
+                    {
+                        yield return new WaitForSeconds(autoProgressDelay);
+                        ShowDialogueAtScene(dialogueNode.nextNode[0]);
+                        yield break; // stop processing further lines
+                    }
                     break;
                 }
-                case DialogueStyle.Normal: //normal dialogue
+
+                case DialogueStyle.Normal:
                 {
-                    dialogueBox.text = line.text;
-                    dialogueBox.color = line.textColor;
-                    dialogueBox.fontSize = line.fontSize;
-                    if (line.outlineWidth > 0f)
+                    // Typewriter effect for normal dialogue
+                    yield return StartCoroutine(TypeNormalText(line));
+
+                    if (line.autoProgress && dialogueNode.nextNode.Length > 0)
                     {
-                        // copy shared material into an instance so we don't change every TMP using this font
-                        Material mat = new Material(dialogueBox.fontSharedMaterial);
-                        dialogueBox.fontMaterial = mat;
-                        mat.SetFloat(ShaderUtilities.ID_OutlineWidth, line.outlineWidth);
-                        mat.SetColor(ShaderUtilities.ID_OutlineColor, line.outlineColor);
+                        yield return new WaitForSeconds(autoProgressDelay);
+                        ShowDialogueAtScene(dialogueNode.nextNode[0]);
+                        yield break;
                     }
                     break;
                 }
             }
+            Debug.Log($"[DialogueManager] Showing line: '{line.text}' type={line.type} autoProgress={line.autoProgress}");
         }
     }
+
+    private IEnumerator TypeNormalText(DialogueLine line)
+    {
+        dialogueBox.text = "";
+        dialogueBox.color = line.textColor;
+        dialogueBox.fontSize = line.fontSize;
+
+        if (line.outlineWidth > 0f)
+        {
+            Material mat = new Material(dialogueBox.fontSharedMaterial);
+            dialogueBox.fontMaterial = mat;
+            mat.SetFloat(ShaderUtilities.ID_OutlineWidth, line.outlineWidth);
+            mat.SetColor(ShaderUtilities.ID_OutlineColor, line.outlineColor);
+        }
+
+        foreach (char c in line.text)
+        {
+            dialogueBox.text += c;
+            yield return new WaitForSeconds(typingSpeed);
+        }
+    }
+
+    private IEnumerator TypeFloatingText(TMP_Text target, string fullText)
+    {
+        target.text = "";
+        foreach (char c in fullText)
+        {
+            target.text += c;
+            yield return new WaitForSeconds(typingSpeed);
+        }
+    }
+
     public void HandleDrag(string characterID, string zoneID, GameObject draggedObject = null)
     {
         DialogueNode node = dialogueNodes[currentNode];
