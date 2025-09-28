@@ -8,7 +8,7 @@ using UnityEngine;
 public class ray : MonoBehaviour
 {
     // Start is called before the first frame update
-    // public SceneMoveNew sm;
+    public SceneMoveNew sm;
     public Camera cam;
     Vector3 firstPos;
     Vector3 secondPos;
@@ -35,9 +35,10 @@ public class ray : MonoBehaviour
                 if (hit.transform.tag == "Tank")
                 {
                     Debug.Log("Hit a tank");
-                    TestFunc();
-                    Switch(2);
-                    // Debug.Log("Switched to scene 2");
+                    sm.SceneSwitch(2);
+                    // TestFunc();
+                    // Switch(2);
+                    // // Debug.Log("Switched to scene 2");
 
                 }
                 if (hit.transform.tag == "wizard")
@@ -51,21 +52,21 @@ public class ray : MonoBehaviour
             }
         }
     }
-    void TestFunc()
-    {
-        Debug.Log("Test function called");
+    // void TestFunc()
+    // {
+    //     Debug.Log("Test function called");
     }
-    void Switch(int sceneNum)
-    {
-        Debug.Log("Switching to scene 2");
-        if (sceneNum == 1)
-        {
-            cam.transform.position = new Vector3(firstPos.x, firstPos.y, cam.transform.position.z);
-        }
-        if (sceneNum == 2)
-        {
-            Debug.Log("Switching to scene 2");
-            cam.transform.position = new Vector3(secondPos.x, secondPos.y, cam.transform.position.z);
-        }
-    }
-}
+    // void Switch(int sceneNum)
+    // {
+    //     Debug.Log("Switching to scene 2");
+    //     if (sceneNum == 1)
+    //     {
+    //         cam.transform.position = new Vector3(firstPos.x, firstPos.y, cam.transform.position.z);
+    //     }
+    //     if (sceneNum == 2)
+    //     {
+    //         Debug.Log("Switching to scene 2");
+    //         cam.transform.position = new Vector3(secondPos.x, secondPos.y, cam.transform.position.z);
+    //     }
+    // }
+
