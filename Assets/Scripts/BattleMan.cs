@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SearchService;
 using UnityEngine;
 
 public class BattleMan : MonoBehaviour
@@ -12,8 +13,8 @@ public class BattleMan : MonoBehaviour
     float distance = 1f;
     float duration = 0.2f;
     public Camera battleCam;
-    public Camera winCam;
-    public Camera loseCam;
+
+    public SceneMoveNew sm;
 
     void BattleStart(Combatant enemy, bool playerStarts)
     {
@@ -41,17 +42,18 @@ public class BattleMan : MonoBehaviour
 
     if (player.health <= 0 || currentEnemy.health <= 0)
     {
-        if(player.health <= 0)
-        {
-            Debug.Log("Got");
-            battleCam.enabled = false;
-            loseCam.enabled = true;
-        }
-        else
-        {
-            Debug.Log("Got");
-            battleCam.enabled = false;
-            winCam.enabled = true;
+            if (player.health <= 0)
+            {
+                Debug.Log("Got");
+                
+
+            }
+            else
+            {
+                Debug.Log("Got");
+                
+                sm.SceneSwitch(3);
+            
         }
         StopAllCoroutines();
         enabled = false; 
