@@ -1,0 +1,8 @@
+{
+    "id": "start",
+    "tank": "I am the tank.",
+    "wizard": "I am the wizard.",
+    "bard": "I am the bard.",
+    "delay": 0,
+    "choice": false
+}
