@@ -16,5 +16,5 @@ MonoBehaviour:
   textFiles:
   - key: 'bloop '
     file: {fileID: 4900000, guid: 7636dd387510ceedcbec5ff87b1698ef, type: 3}
-  - key: 
-    file: {fileID: 0}
+  - key: dddd
+    file: {fileID: 4900000, guid: 31ca06602425fada883a4b86f3abd09e, type: 3}
