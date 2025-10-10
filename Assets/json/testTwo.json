@@ -1,0 +1,9 @@
+{
+    "id": "next",
+    "tank": "I am still the tank.",
+    "wizard": "I am still the wizard.",
+    "bard": "I am still the bard.",
+    "delay": 1,
+    "choice": false,
+    "goesTo":  "end"
+}
