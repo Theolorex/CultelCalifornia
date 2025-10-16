@@ -28,7 +28,7 @@ public class DragRay : MonoBehaviour
             {
                 draggable.OnDialogueRelease(objectHit.collider.transform);
             }
-            else
+            else //if it hit nothing, return position
             {
                 draggable.OnDialogueRelease();
             }
